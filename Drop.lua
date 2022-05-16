@@ -7,5 +7,5 @@ function onload()
 end
 
 function Press()
-    Global.call('MoveDown')
+    Global.call('InputDown')
 end

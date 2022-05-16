@@ -1,6 +1,8 @@
 
 --i j l o s z t is tetrimino order
 modelNumber = 7
+scoreTitle = 'Score:'
+score = 0
 modelGUIDS = {'976064','c33277','acca5c','30437b','7ab303','73262e','50ddeb'; n = modelNumber}
 blockGUID = 'aca52d'
 modelTypeCoords =
@@ -87,12 +89,44 @@ function onLoad()
      end
    end
    math.randomseed(os.time())
+   SetupText()
+end
+
+function onUpdate()
+  if start == true then
+    Countdown()
+  end
+  console.update() 
+  
+end
+
+function UpdateScore(newScore)
+    if score ~= newScore then
+      score = newScore
+      UpdateText(score)
+    end
+end
+
+function SetupText()
+  UpdateText(score)
+  self.UI.setAttribute('Score','fontStyle','Bold')
+  self.UI.setAttribute('Score','fontSize','50')
+  self.UI.setAttribute('Score','color','Grey')
+  self.UI.setAttribute('Score','alignment','LowerCenter')
+  self.UI.setAttribute('Score','outline','Black')
+  self.UI.setAttribute('Score','outlineSize',"-1 -1")
+end
+
+function UpdateText(score)
+    scoreText = scoreTitle
+    scoreText = scoreText ..tostring(score)
+    self.UI.setAttribute('Score','text',scoreText)
 end
 
 function SetKeyBindings()
   addHotkey('Move Left',function()MoveLeft()end,false)
   addHotkey('Move Right',function()MoveRight()end,false)
-  addHotkey('Move Down',function()MoveDown()end,false)
+  addHotkey('Move Down',function()InputDown()end,false)
   addHotkey('Rotate',function()RotateRight()end,false)
 end
 
@@ -113,17 +147,12 @@ end
 
 --Game State--
 
-function onUpdate()
-  if start == true then
-    Countdown()
-  end
-  console.update() 
-end
+
 
 function Countdown()
   dropTimer = dropTimer + Time.delta_time
   if dropTimer > dropTime then
-      MoveDown()
+      MoveDown(false)
       dropTimer = 0
   end
 end
@@ -147,6 +176,7 @@ function EndGame()
     end
   end
   model.destruct()
+  UpdateScore(0)
 end
 
 --Model Movement--
@@ -182,7 +212,11 @@ function MoveRight()
   end
 end
 
-function MoveDown()
+function InputDown()
+  MoveDown(true)
+end
+
+function MoveDown(fromInput)
   modelPrevPos = model.getPosition()
   modelPrevCoords = modelCoords;
 
@@ -193,12 +227,16 @@ function MoveDown()
     AddModelToGrid()
     SpawnModel()
   end
+
+  if fromInput == true then
+    UpdateScore(score + 1)
+  end
 end
 
 -- Line Calculus--
 
 --Check if line is complete and ready for line clear
-function LineCheck()
+function LineCheck(numLines)
   lineComplete = true
   for j = 2,21 do
     for i = 2,11 do
@@ -208,10 +246,23 @@ function LineCheck()
     end
     if lineComplete == true then
       DestroyLine(j)
-      LineCheck()
+      LineCheck(numLines + 1)
       return
     end
     lineComplete = true
+  end
+  CalculateLineScore(numLines)
+end
+
+function CalculateLineScore(numLines)
+  if numLines == 1 then
+    UpdateScore(score + 40)
+  elseif numLines == 2 then
+    UpdateScore(score + 100)
+  elseif numLines == 3 then
+    UpdateScore(score + 300)
+  elseif numLines == 4 then
+    UpdateScore(score + 1200)
   end
 end
 
@@ -260,7 +311,7 @@ function AddModelToGrid()
     for i,v in pairs (disassembledCubes) do
       disassembledCubes[i] = nil
     end
-    LineCheck()--check for any line clears
+    LineCheck(0)--check for any line clears
 end
 
 --Helper funcs--
