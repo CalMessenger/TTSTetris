@@ -61,8 +61,24 @@ modelCoords = {n = 2}
 disassembledCubes = {}
 
 
-dropTime = 1
-dropTimer = 0
+rotationSystems = {NINTENDO = 1}
+levelSystems = {NES = 1}
+wallKicks = false
+hardDrops = false
+lockDelay = false
+
+modeSettings = 
+{--NES
+  {NES = 
+    {ROTATIONS = rotationSystems.NINTENDO},
+    {WALLKICKS = false},
+    {HARDDROPS = false},
+    {LOCKDELAY = false},
+    {LEVELS = levelSystems.NES}
+
+  }
+
+}
 
 gridBorderX = 12
 gridBorderY = 22
@@ -70,6 +86,13 @@ gridBorderY = 22
 grid = {}
 
 start = false
+
+dropTime = 1
+dropTimer = 0
+
+downLocked = false
+downTime = 2
+downTimer = 0
 
 function onLoad()
   SetKeyBindings()
@@ -147,9 +170,15 @@ end
 
 --Game State--
 
+function DropCountdown()
+  dropTimer = dropTimer + Time.delta_time
+  if dropTimer > dropTime then
+      MoveDown(false)
+      dropTimer = 0
+  end
+end
 
-
-function Countdown()
+function DownCountdown()
   dropTimer = dropTimer + Time.delta_time
   if dropTimer > dropTime then
       MoveDown(false)
@@ -214,6 +243,10 @@ end
 
 function InputDown()
   MoveDown(true)
+end
+
+function CountDownDown()
+
 end
 
 function MoveDown(fromInput)
